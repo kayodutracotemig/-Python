@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora Web</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>Calculadora Web</h1>
+
+    <div id="calculator">
+        <form method="POST" action="{{ url_for('index') }}">
+            <div class="form-grupo">
+                <label for="num1" id="label-num1">Primeiro número</label>
+                <input type="number" id="num1" name="num1" step="any" required
+                       value="{{ request.form.get('num1', '') }}">
+            </div>
+
+            <div class="form-grupo">
+                <label for="operacao">Operação</label>
+                {% set op = request.form.get('operacao', '+') %}
+                <select id="operacao" name="operacao" required onchange="atualizarCampos()">
+                    <option value="+" {% if op == '+' %}selected{% endif %}>+ Somar</option>
+                    <option value="-" {% if op == '-' %}selected{% endif %}>− Subtrair</option>
+                    <option value="*" {% if op == '*' %}selected{% endif %}>× Multiplicar</option>
+                    <option value="/" {% if op == '/' %}selected{% endif %}>÷ Dividir</option>
+                    <option value="**" {% if op == '**' %}selected{% endif %}>^ Potência</option>
+                    <option value="sqrt" {% if op == 'sqrt' %}selected{% endif %}>√ Raiz quadrada</option>
+                    <option value="log" {% if op == 'log' %}selected{% endif %}>log Logaritmo</option>
+                    <option value="bhaskara" {% if op == 'bhaskara' %}selected{% endif %}>Bhaskara</option>
+                </select>
+            </div>
+
+            <div class="form-grupo" id="grupo-num2">
+                <label for="num2" id="label-num2">Segundo número</label>
+                <input type="number" id="num2" name="num2" step="any"
+                       value="{{ request.form.get('num2', '') }}">
+            </div>
+
+            <div class="form-grupo" id="grupo-num3" style="display: none;">
+                <label for="num3">Terceiro número (c)</label>
+                <input type="number" id="num3" name="num3" step="any"
+                       value="{{ request.form.get('num3', '') }}">
+            </div>
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        {% if etapas %}
+        <div class="resultado">
+            <strong>Resposta do servidor (Python):</strong>
+            <div>{{ etapas }}</div>
+            {% if resultados %}<div>Resultado: <b>{{ resultados }}</b></div>{% endif %}
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('index') }}">Limpar / nova conta</a>
+    </div>
+
+    <script>
+        function atualizarCampos() {
+            const op = document.getElementById("operacao").value;
+            const grupoNum2 = document.getElementById("grupo-num2");
+            const grupoNum3 = document.getElementById("grupo-num3");
+            const num2 = document.getElementById("num2");
+            const num3 = document.getElementById("num3");
+            const labelNum1 = document.getElementById("label-num1");
+            const labelNum2 = document.getElementById("label-num2");
+
+            labelNum1.innerText = "Primeiro número";
+            labelNum2.innerText = "Segundo número";
+
+            if (op === "sqrt") {
+                grupoNum2.style.display = "none";
+                grupoNum3.style.display = "none";
+                num2.required = false;
+                num3.required = false;
+            } else if (op === "log") {
+                grupoNum2.style.display = "block";
+                grupoNum3.style.display = "none";
+                labelNum1.innerText = "Logaritmando (Número)";
+                labelNum2.innerText = "Base (Deixe vazio para base 10)";
+                num2.required = false;
+                num3.required = false;
+            } else if (op === "bhaskara") {
+                grupoNum2.style.display = "block";
+                grupoNum3.style.display = "block";
+                labelNum1.innerText = "Coeficiente 'a'";
+                labelNum2.innerText = "Coeficiente 'b'";
+                num2.required = true;
+                num3.required = true;
+            } else {
+                grupoNum2.style.display = "block";
+                grupoNum3.style.display = "none";
+                num2.required = true;
+                num3.required = false;
+            }
+        }
+        
+        window.onload = atualizarCampos;
+    </script>
+
+</body>
+</html>
