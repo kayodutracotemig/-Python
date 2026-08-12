@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<h2>Editar tarefa</h2>
+<form method="POST" class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label">Título</label>
+        <input type="text" name="titulo" class="form-control" value="{{ tarefa['titulo'] }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Descrição</label>
+        <textarea name="descricao" class="form-control">{{ tarefa['descricao'] }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+            <option value="pendente" {% if tarefa['status'] == 'pendente' %}selected{% endif %}>Pendente</option>
+            <option value="em_andamento" {% if tarefa['status'] == 'em_andamento' %}selected{% endif %}>Em andamento</option>
+            <option value="concluida" {% if tarefa['status'] == 'concluida' %}selected{% endif %}>Concluída</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Atualizar</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

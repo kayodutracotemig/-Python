@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block conteudo %}
+
+<div class="alert alert-info">
+    <i class="bi bi-quote"></i> {{ frase }}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Minhas tarefas</h2>
+    <a href="{{ url_for('nova_tarefa') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nova tarefa
+    </a>
+</div>
+
+<div class="dropdown mb-3">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        Filtrar por status: <span id="filtroAtual">Todas</span>
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" data-status="todas">Todas</a></li>
+        <li><a class="dropdown-item" href="#" data-status="pendente">Pendente</a></li>
+        <li><a class="dropdown-item" href="#" data-status="em_andamento">Em andamento</a></li>
+        <li><a class="dropdown-item" href="#" data-status="concluida">Concluída</a></li>
+    </ul>
+</div>
+
+<div id="listaTarefas" class="row g-3">
+    {% for tarefa in tarefas %}
+    <div class="col-md-4">
+        <div class="card card-{{ tarefa['status'] }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ tarefa['titulo'] }}</h5>
+                <p class="card-text">{{ tarefa['descricao'] }}</p>
+                <span class="badge bg-secondary">{{ tarefa['status'] }}</span>
+                <div class="mt-2">
+                    <a href="{{ url_for('editar', id=tarefa['id']) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{{ url_for('excluir', id=tarefa['id']) }}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Excluir esta tarefa?')">
+                        <i class="bi bi-trash"></i> Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-muted">Nenhuma tarefa cadastrada ainda.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+function montarCard(tarefa) {
+    return `
+        <div class="col-md-4">
+            <div class="card card-${tarefa.status}">
+                <div class="card-body">
+                    <h5 class="card-title">${tarefa.titulo}</h5>
+                    <p class="card-text">${tarefa.descricao ?? ""}</p>
+                    <span class="badge bg-secondary">${tarefa.status}</span>
+                    <div class="mt-2">
+                        <a href="/editar/${tarefa.id}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a href="/excluir/${tarefa.id}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Excluir esta tarefa?')">
+                            <i class="bi bi-trash"></i> Excluir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+
+document.querySelectorAll("[data-status]").forEach(item => {
+    item.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const status = item.getAttribute("data-status");
+        document.getElementById("filtroAtual").textContent = item.textContent;
+
+        const resposta = await fetch(`/api/tarefas?status=${status}`);
+        const tarefas = await resposta.json();
+
+        const lista = document.getElementById("listaTarefas");
+        lista.innerHTML = tarefas.length
+            ? tarefas.map(montarCard).join("")
+            : '<p class="text-muted">Nenhuma tarefa nesse status.</p>';
+    });
+});
+</script>
+{% endblock %}
